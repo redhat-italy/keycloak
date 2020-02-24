@@ -1,0 +1,38 @@
+FROM registry.access.redhat.com/ubi8-minimal
+
+ENV LAUNCH_JBOSS_IN_BACKGROUND 1
+ENV PROXY_ADDRESS_FORWARDING false
+ENV JBOSS_HOME /opt/jboss/keycloak
+ENV LANG en_US.UTF-8
+
+USER root
+
+#COPY distribution/server-dist/target/keycloak-9.0.1-SNAPSHOT.tar.gz /tmp/keycloak-9.0.1-SNAPSHOT.tar.gz
+
+RUN microdnf update -y \
+ && microdnf install -y glibc-langpack-en gzip hostname java-11-openjdk-headless openssl tar which shadow-utils maven git \
+ && microdnf clean all
+
+RUN echo $(java -version)
+RUN echo $(mvn -version)
+RUN echo $(git --version)
+
+WORKDIR /opt/jboss
+
+RUN mkdir build
+WORKDIR /opt/jboss/build
+
+RUN git clone https://github.com/redhat-italy/keycloak.git 
+WORKDIR /opt/jboss/build/keycloak
+
+RUN mvn -Pdistribution -pl distribution/server-dist -am -Dmaven.test.skip clean install
+
+WORKDIR /opt/jboss
+RUN tar xvf build/keycloak/distribution/server-dist/target/keycloak-9.0.1-SNAPSHOT.tar.gz
+RUN mv keycloak-9.0.1-SNAPSHOT keycloak
+RUN rm -rf build
+RUN echo $(ls -1 /opt/jboss)
+
+# Add user & group
+RUN groupadd jboss && useradd jboss -g jboss \
+  && chown -R jboss /opt/jboss
