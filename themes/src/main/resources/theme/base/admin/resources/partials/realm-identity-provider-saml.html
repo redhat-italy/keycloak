@@ -158,6 +158,24 @@
                 </div>
                 <kc-tooltip>{{:: 'saml.principal-attribute.tooltip' | translate}}</kc-tooltip>
             </div>
+            <!-- todo:SPID IsPassive Bookmark begin -->
+            <div class="form-group">
+                 <label class="col-md-2 control-label" for="includeIsPassive">{{:: 'include-is-passive' | translate}}</label>
+                 <div class="col-md-6">
+                    <input ng-model="identityProvider.config.includeIsPassive" id="includeIsPassive" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                 </div>
+                 <kc-tooltip>{{:: 'include-is-passive.tooltip' | translate}}</kc-tooltip>
+             </div>
+            <!-- todo:SPID IsPassive Bookmark end-->
+            <!-- todo:SPID includeAllowCreate Bookmark begin -->
+            <div class="form-group">
+                 <label class="col-md-2 control-label" for="includeAllowCreate">{{:: 'include-allow-create' | translate}}</label>
+                 <div class="col-md-6">
+                    <input ng-model="identityProvider.config.includeAllowCreate" id="includeAllowCreate" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                 </div>
+                 <kc-tooltip>{{:: 'include-allow-create.tooltip' | translate}}</kc-tooltip>
+             </div>
+            <!-- todo:SPID includeAllowCreate Bookmark end-->
             <div class="form-group">
                 <label class="col-md-2 control-label" for="postBindingResponse">{{:: 'http-post-binding-response' | translate}}</label>
                 <div class="col-md-6">

@@ -47,6 +47,8 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
     public static final String WANT_ASSERTIONS_SIGNED = "wantAssertionsSigned";
     public static final String WANT_AUTHN_REQUESTS_SIGNED = "wantAuthnRequestsSigned";
     public static final String XML_SIG_KEY_INFO_KEY_NAME_TRANSFORMER = "xmlSigKeyInfoKeyNameTransformer";
+    public static final String INCLUDE_IS_PASSIVE = "includeIsPassive";
+    public static final String INCLUDE_ALLOW_CREATE= "includeAllowCreate";
 
     public SAMLIdentityProviderConfig() {
     }
@@ -124,12 +126,16 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
         return crt.split(",");
     }
 
+    //todo: turn into optional config
     public String getNameIDPolicyFormat() {
-        return getConfig().get(NAME_ID_POLICY_FORMAT);
+        return "urn:oasis:names:tc:SAML:2.0:nameid-format:transient";
+        //return getConfig().get(NAME_ID_POLICY_FORMAT);
     }
 
+    //todo: turn into optional config
     public void setNameIDPolicyFormat(String nameIDPolicyFormat) {
-        getConfig().put(NAME_ID_POLICY_FORMAT, nameIDPolicyFormat);
+        //getConfig().put(NAME_ID_POLICY_FORMAT, nameIDPolicyFormat);
+        getConfig().put(NAME_ID_POLICY_FORMAT, "urn:oasis:names:tc:SAML:2.0:nameid-format:transient");
     }
 
     public boolean isWantAuthnRequestsSigned() {
@@ -167,7 +173,15 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
     public String getSignatureAlgorithm() {
         return getConfig().get(SIGNATURE_ALGORITHM);
     }
+    
+    public boolean isIncludeAllowCreate() {
+        return Boolean.valueOf(getConfig().get(INCLUDE_ALLOW_CREATE));
+    }
 
+    public boolean isIncludeIsPassive() {
+        return Boolean.valueOf(getConfig().get(INCLUDE_IS_PASSIVE));
+    }
+    
     public void setSignatureAlgorithm(String signatureAlgorithm) {
         getConfig().put(SIGNATURE_ALGORITHM, signatureAlgorithm);
     }
@@ -194,6 +208,15 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
 
     public void setPostBindingResponse(boolean postBindingResponse) {
         getConfig().put(POST_BINDING_RESPONSE, String.valueOf(postBindingResponse));
+    }
+
+
+    public void setIncludeAllowCreate(boolean includeAllowCreate) {
+        getConfig().put(INCLUDE_ALLOW_CREATE, String.valueOf(includeAllowCreate));
+    }
+
+    public void setIncludeIsPassive(boolean includeIsPassive) {
+        getConfig().put(INCLUDE_IS_PASSIVE, String.valueOf(includeIsPassive));
     }
 
     public boolean isPostBindingLogout() {

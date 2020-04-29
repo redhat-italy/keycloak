@@ -34,7 +34,9 @@ import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamWriter;
+import java.net.ProtocolException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
@@ -71,6 +73,10 @@ public class SAMLRequestWriter extends BaseWriter {
         StaxUtil.writeAttribute(writer, JBossSAMLConstants.ISSUE_INSTANT.get(), request.getIssueInstant().toString());
 
         URI destination = request.getDestination();
+        //todo: Should be optional
+        StaxUtil.writeAttribute(writer, "AttributeConsumingServiceIndex", "1");
+
+
         if (destination != null)
             StaxUtil.writeAttribute(writer, JBossSAMLConstants.DESTINATION.get(), destination.toASCIIString());
 
@@ -88,9 +94,13 @@ public class SAMLRequestWriter extends BaseWriter {
             StaxUtil.writeAttribute(writer, JBossSAMLConstants.FORCE_AUTHN.get(), forceAuthn.toString());
         }
 
-        Boolean isPassive = request.isIsPassive();
-        if (isPassive != null) {
-            StaxUtil.writeAttribute(writer, JBossSAMLConstants.IS_PASSIVE.get(), isPassive.toString());
+	    //todo: IsPassive should be optional
+
+        if(request.isIncludeIsPassive()) {
+            Boolean isPassive = request.isIsPassive();
+            if (isPassive != null) {
+                StaxUtil.writeAttribute(writer, JBossSAMLConstants.IS_PASSIVE.get(), isPassive.toString());
+            }
         }
 
         URI protocolBinding = request.getProtocolBinding();
@@ -115,6 +125,15 @@ public class SAMLRequestWriter extends BaseWriter {
 
         NameIDType issuer = request.getIssuer();
         if (issuer != null) {
+            //@spid: attributes for Spid Auth
+            try {
+                issuer.setFormat(new URI("urn:oasis:names:tc:SAML:2.0:nameid-format:entity"));
+		        //todo: the name qualifier should be a parameter
+                issuer.setNameQualifier("http://rhsso.test.spid.it");
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+                throw new ProcessingException(e);
+            }
             write(issuer, new QName(ASSERTION_NSURI.get(), JBossSAMLConstants.ISSUER.get(), ASSERTION_PREFIX));
         }
 
@@ -130,13 +149,20 @@ public class SAMLRequestWriter extends BaseWriter {
 
         NameIDPolicyType nameIDPolicy = request.getNameIDPolicy();
         if (nameIDPolicy != null) {
-            write(nameIDPolicy);
+            write(nameIDPolicy, request.isIncludeAllowCreate());
         }
 
         RequestedAuthnContextType requestedAuthnContext = request.getRequestedAuthnContext();
         if (requestedAuthnContext != null) {
             write(requestedAuthnContext);
+		//todo: block for spid
+        } else {
+            request.setRequestedAuthnContext(new RequestedAuthnContextType());
+            request.getRequestedAuthnContext().addAuthnContextClassRef("https://www.spid.gov.it/SpidL2");
+            request.getRequestedAuthnContext().setComparison(AuthnContextComparisonType.MINIMUM);
+            write(request.getRequestedAuthnContext());
         }
+		//todo: block for spid
 
         StaxUtil.writeEndElement(writer);
         StaxUtil.flush(writer);
@@ -209,7 +235,7 @@ public class SAMLRequestWriter extends BaseWriter {
      *
      * @throws ProcessingException
      */
-    public void write(NameIDPolicyType nameIDPolicy) throws ProcessingException {
+    public void write(NameIDPolicyType nameIDPolicy, boolean includeAllowCreate) throws ProcessingException {
         StaxUtil.writeStartElement(writer, PROTOCOL_PREFIX, JBossSAMLConstants.NAMEID_POLICY.get(), PROTOCOL_NSURI.get());
 
         URI format = nameIDPolicy.getFormat();
@@ -222,8 +248,9 @@ public class SAMLRequestWriter extends BaseWriter {
             StaxUtil.writeAttribute(writer, JBossSAMLConstants.SP_NAME_QUALIFIER.get(), spNameQualifier);
         }
 
+        //todo: make optional
         Boolean allowCreate = nameIDPolicy.isAllowCreate();
-        if (allowCreate != null) {
+        if (includeAllowCreate && allowCreate != null) {
             StaxUtil.writeAttribute(writer, JBossSAMLConstants.ALLOW_CREATE.get(), allowCreate.toString());
         }
 

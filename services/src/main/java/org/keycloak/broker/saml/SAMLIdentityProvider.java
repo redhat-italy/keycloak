@@ -91,12 +91,16 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
                 protocolBinding = JBossSAMLURIConstants.SAML_HTTP_POST_BINDING.get();
             }
 
+            //todo insert optional isPassive
+
             SAML2AuthnRequestBuilder authnRequestBuilder = new SAML2AuthnRequestBuilder()
                     .assertionConsumerUrl(assertionConsumerServiceUrl)
                     .destination(destinationUrl)
                     .issuer(issuerURL)
                     .forceAuthn(getConfig().isForceAuthn())
                     .protocolBinding(protocolBinding)
+                    .isIncludeIsPassive(getConfig().isIncludeIsPassive())
+                    .isIncludeAllowCreate(getConfig().isIncludeAllowCreate())
                     .nameIdPolicy(SAML2NameIDPolicyBuilder.format(nameIDPolicyFormat));
             JaxrsSAML2BindingBuilder binding = new JaxrsSAML2BindingBuilder(session)
                     .relayState(request.getState().getEncoded());
@@ -117,6 +121,10 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
             }
 
             AuthnRequestType authnRequest = authnRequestBuilder.createAuthnRequest();
+            System.out.println("PROVA ===");
+            System.out.println("PROVA ===");
+            System.out.println("PROVA ===");
+            System.out.println("PROVA ===");
             for(Iterator<SamlAuthenticationPreprocessor> it = SamlSessionUtils.getSamlAuthenticationPreprocessorIterator(session); it.hasNext(); ) {
                 authnRequest = it.next().beforeSendingLoginRequest(authnRequest, request.getAuthenticationSession());
             }
@@ -143,6 +151,8 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
         SubjectType.STSubType subType = subject.getSubType();
         NameIDType subjectNameID = (NameIDType) subType.getBaseID();
         authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT_NAMEID, subjectNameID.serializeAsString());
+        //todo: check for SPID
+        if (subjectNameID.getFormat() != null) authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT_NAMEFORMAT, subjectNameID.getFormat().toString());
         AuthnStatementType authn =  (AuthnStatementType)context.getContextData().get(SAMLEndpoint.SAML_AUTHN_STATEMENT);
         if (authn != null && authn.getSessionIndex() != null) {
             authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SESSION_INDEX, authn.getSessionIndex());

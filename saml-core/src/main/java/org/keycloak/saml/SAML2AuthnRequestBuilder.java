@@ -23,9 +23,12 @@ import org.keycloak.saml.processing.core.saml.v2.common.IDGenerator;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
 import org.w3c.dom.Document;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 /**
@@ -88,6 +91,16 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
         return this;
     }
 
+    public SAML2AuthnRequestBuilder isIncludeAllowCreate(boolean includeAllowCreate) {
+        this.authnRequestType.setIncludeAllowCreate(includeAllowCreate);
+        return this;
+    }
+
+    public SAML2AuthnRequestBuilder isIncludeIsPassive(boolean includeIsPassive) {
+        this.authnRequestType.setIncludeIsPassive(includeIsPassive);
+        return this;
+    }
+
     public Document toDocument() {
         try {
             AuthnRequestType authnRequestType = createAuthnRequest();
@@ -105,9 +118,16 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
 
         res.setIssuer(nameIDType);
 
-        res.setDestination(URI.create(this.destination));
+        String hostDestination = getDestinationHost(this.destination);
 
-        if (! this.extensions.isEmpty()) {
+        //orginal keycloack invoation: res.setDestination(URI.create(this.destination));
+        res.setDestination(URI.create(hostDestination));
+
+        //todo: check for old method invocation ->
+        // authnRequestType.setDestination(URI.create(hostDestination));
+
+
+        if (!this.extensions.isEmpty()) {
             ExtensionsType extensionsType = new ExtensionsType();
             for (NodeGenerator extension : this.extensions) {
                 extensionsType.addExtension(extension);
@@ -116,5 +136,26 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
         }
 
         return res;
+    }
+    //todo: check destination host
+
+    private String getDestinationHost(String destination) {
+
+        try {
+            URL url = new URL(destination);
+            String hostAndProtocol = url.getProtocol() + "://" + url.getHost();
+
+            if (url.getPort() > 0) {
+                return hostAndProtocol + ":" + url.getPort();
+            }
+
+            return hostAndProtocol;
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+
+        }
+
+        return destination;
     }
 }

@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -119,6 +120,13 @@ public class SAML2Request {
         issuer.setValue(issuerValue);
 
         authnRequest.setIssuer(issuer);
+	//todo: should be optional/parametric
+        try {
+            authnRequest.getIssuer().setFormat(new URI("urn:oasis:names:tc:SAML:2.0:nameid-format:entity"));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new ConfigurationException(e);
+        }
 
         // Create a default NameIDPolicy
         NameIDPolicyType nameIDPolicy = new NameIDPolicyType();

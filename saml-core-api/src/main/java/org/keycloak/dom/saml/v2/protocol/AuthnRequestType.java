@@ -78,6 +78,10 @@ public class AuthnRequestType extends RequestAbstractType {
     protected Integer attributeConsumingServiceIndex;
 
     protected String providerName;
+    
+    protected  boolean includeIsPassive;
+
+    protected  boolean includeAllowCreate;
 
     public AuthnRequestType(String id, XMLGregorianCalendar instant) {
         super(id, instant);
@@ -297,6 +301,46 @@ public class AuthnRequestType extends RequestAbstractType {
      */
     public void setProviderName(String value) {
         this.providerName = value;
+    }
+
+    /**
+     * Sets the value of the includeIsPassive property.
+     *
+     * @param includeIsPassive
+     */
+
+    public void setIncludeIsPassive(boolean includeIsPassive) {
+        this.includeIsPassive = includeIsPassive;
+    }
+    
+    /**
+     * Gets the value of the includeIsPassive property.
+     *
+     * @return
+     */
+
+    public boolean isIncludeIsPassive() {
+        return includeIsPassive;
+    }
+
+    /**
+     * Sets the value of the includeAllowCreate property.
+     *
+     * @param includeAllowCreate
+     */
+
+    public void setIncludeAllowCreate(boolean includeAllowCreate) {
+        this.includeAllowCreate = includeAllowCreate;
+    }
+
+    /**
+     * Gets the value of the includeAllowCreate property.
+     *
+     * @return
+     */
+
+    public boolean isIncludeAllowCreate() {
+        return includeAllowCreate;
     }
 
     public URI getSenderURL() {
